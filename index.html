@@ -2,104 +2,625 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mini App</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Grid Bot</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;800&display=swap" rel="stylesheet" />
 
   <style>
+    /* ── TOKENS: respeta el tema de Telegram ────────────────────────── */
+    :root {
+      --bg:       var(--tg-theme-bg-color,           #0a0c0f);
+      --surface:  var(--tg-theme-secondary-bg-color, #111418);
+      --text:     var(--tg-theme-text-color,         #e2e6f0);
+      --hint:     var(--tg-theme-hint-color,         #6b7385);
+      --link:     var(--tg-theme-link-color,         #4d9fff);
+      --btn:      var(--tg-theme-button-color,       #00e89a);
+      --btn-text: var(--tg-theme-button-text-color,  #0a0c0f);
+      --border:   rgba(255,255,255,.07);
+      --green:    #00e89a;
+      --red:      #ff4d6a;
+      --amber:    #f5a623;
+      --coin:     #b5a8f0;
+      --radius:   14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: system-ui;
-      background: var(--tg-theme-bg-color, #fff);
-      color: var(--tg-theme-text-color, #000);
-      display: flex;
-      justify-content: center;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      min-height: 100vh;
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SCREEN SYSTEM ──────────────────────────────────────────────── */
+    .screen { display: none; }
+    .screen.active { display: flex; flex-direction: column; }
+
+    /* ── LOADING / ERROR SCREEN ─────────────────────────────────────── */
+    #screen-loading, #screen-error {
+      min-height: 100vh;
       align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .card {
-      padding: 24px;
-      border-radius: 16px;
-      background: var(--tg-theme-secondary-bg-color, #f3f3f3);
+      justify-content: center;
+      padding: 32px;
       text-align: center;
-      width: 320px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .gate-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 320px;
+    }
+    .gate-card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .gate-card p { color: var(--hint); font-size: 12px; line-height: 1.6; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── MAIN SCREEN ────────────────────────────────────────────────── */
+    #screen-main {
+      min-height: 100vh;
+      padding: 0 0 80px;
     }
 
-    .ok { color: green; }
-    .error { color: red; }
-    .loading { color: gray; }
+    /* ── TOP BAR ────────────────────────────────────────────────────── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar-left h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+    .topbar-left h1 span { color: var(--coin); }
+    .topbar-left .sub { font-size: 10px; color: var(--hint); margin-top: 3px; }
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0,232,154,.1);
+      border: 1px solid rgba(0,232,154,.25);
+      color: var(--green);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    .live-pill::before {
+      content: '';
+      width: 5px; height: 5px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,232,154,.4); }
+      50%      { opacity: .6; box-shadow: 0 0 0 4px rgba(0,232,154,0); }
+    }
+    .no-session-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(107,115,133,.12);
+      border: 1px solid rgba(107,115,133,.2);
+      color: var(--hint);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 10px;
+      letter-spacing: .5px;
+    }
+
+    /* ── SCROLL CONTENT ─────────────────────────────────────────────── */
+    .content { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* ── CARD ───────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    /* ── SECTION LABEL ──────────────────────────────────────────────── */
+    .sec-label {
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--hint);
+      margin-bottom: 12px;
+    }
+
+    /* ── POSITION BANNER ────────────────────────────────────────────── */
+    .pos-banner {
+      background: linear-gradient(135deg, rgba(181,168,240,.12), rgba(181,168,240,.04));
+      border: 1px solid rgba(181,168,240,.2);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 8px;
+    }
+    .pos-item .label { font-size: 10px; color: var(--hint); margin-bottom: 4px; }
+    .pos-item .val {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--coin);
+    }
+    .pos-item .val.pos { color: var(--green); }
+    .pos-item .val.neg { color: var(--red); }
+    .pos-item .val.neutral { color: var(--text); }
+
+    /* ── KPI ROW ────────────────────────────────────────────────────── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent, var(--green));
+      opacity: .4;
+    }
+    .kpi .k-label { font-size: 10px; letter-spacing: .8px; text-transform: uppercase; color: var(--hint); margin-bottom: 6px; }
+    .kpi .k-val { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--accent, var(--text)); }
+    .kpi .k-sub { font-size: 10px; color: var(--hint); margin-top: 3px; }
+
+    /* ── TRADES LIST ────────────────────────────────────────────────── */
+    .trades-header, .trade-row {
+      display: grid;
+      grid-template-columns: 52px 48px 1fr 72px 68px;
+      gap: 4px;
+      align-items: center;
+      font-size: 11px;
+    }
+    .trades-header {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--hint);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+    .trade-row {
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .trade-row:last-child { border-bottom: none; }
+    .trade-row .t-time { color: var(--hint); font-size: 10px; }
+    .side-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    .side-badge.buy  { background: rgba(0,232,154,.1); color: var(--green); }
+    .side-badge.sell { background: rgba(255,77,106,.1); color: var(--red); }
+    .trade-row .t-price { font-size: 11px; text-align: right; }
+    .trade-row .t-usd   { font-size: 11px; text-align: right; color: var(--hint); }
+    .trade-row .t-pnl   { font-size: 11px; text-align: right; }
+    .pos { color: var(--green); }
+    .neg { color: var(--red); }
+    .dim { color: var(--hint); }
+
+    /* ── GRID LADDER ────────────────────────────────────────────────── */
+    .ladder { display: flex; flex-direction: column; gap: 3px; }
+    .l-row {
+      display: grid;
+      grid-template-columns: 22px 1fr 70px 56px;
+      gap: 6px;
+      align-items: center;
+      padding: 7px 8px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      font-size: 11px;
+    }
+    .l-row.sell { border-color: rgba(255,77,106,.15); background: rgba(255,77,106,.04); }
+    .l-row.buy  { border-color: rgba(0,232,154,.15);  background: rgba(0,232,154,.04); }
+    .l-row.curr { border-color: var(--amber) !important; background: rgba(245,166,35,.08) !important; }
+
+    .l-idx  { color: var(--hint); font-size: 10px; text-align: center; }
+    .l-price {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .l-row.sell .l-price { color: var(--red); }
+    .l-row.buy  .l-price { color: var(--green); }
+    .l-row.curr .l-price { color: var(--amber); }
+
+    .bar-wrap { background: var(--border); border-radius: 3px; height: 4px; overflow: hidden; }
+    .bar      { height: 100%; border-radius: 3px; }
+    .l-row.sell .bar { background: var(--red); }
+    .l-row.buy  .bar { background: var(--green); }
+    .l-row.curr .bar { background: var(--amber); }
+    .l-usd { color: var(--hint); font-size: 10px; text-align: right; }
+
+    .grid-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .grid-meta span {
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 10px;
+      color: var(--hint);
+    }
+    .grid-meta span b { color: var(--text); }
+
+    /* ── REFRESH BTN ────────────────────────────────────────────────── */
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 13px;
+      border-radius: var(--radius);
+      background: var(--btn);
+      color: var(--btn-text);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: .3px;
+      transition: opacity .2s;
+    }
+    .refresh-btn:active { opacity: .75; }
+    .refresh-btn.loading { opacity: .6; pointer-events: none; }
+
+    /* ── NO SESSION ─────────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+    }
+    .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-state p { color: var(--hint); font-size: 12px; line-height: 1.6; }
   </style>
 </head>
-
 <body>
-  <div class="card">
-    <h2 id="title">Cargando...</h2>
-    <div id="status" class="loading">Verificando acceso...</div>
+
+<!-- ── LOADING ──────────────────────────────────────────────────────── -->
+<div id="screen-loading" class="screen active">
+  <div class="gate-card">
+    <div class="spinner"></div>
+    <h2>Grid Bot</h2>
+    <p>Verificando acceso…</p>
+  </div>
+</div>
+
+<!-- ── ERROR ────────────────────────────────────────────────────────── -->
+<div id="screen-error" class="screen">
+  <div class="gate-card">
+    <h2 id="err-title">Acceso denegado</h2>
+    <p id="err-msg"></p>
+  </div>
+</div>
+
+<!-- ── MAIN ─────────────────────────────────────────────────────────── -->
+<div id="screen-main" class="screen">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Grid Bot · <span id="top-coin">—</span></h1>
+      <div class="sub" id="top-meta">—</div>
+    </div>
+    <div id="top-pill"></div>
   </div>
 
-  <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+  <div class="content" id="main-content">
+    <!-- inyectado por JS -->
+  </div>
 
-    const API_URL = "https://zegpganrjhmtqjgqyasu.supabase.co/functions/v1/auth-user-api";
+</div>
 
-    const title = document.getElementById("title");
-    const status = document.getElementById("status");
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────
+const AUTH_URL    = "https://zegpganrjhmtqjgqyasu.supabase.co/functions/v1/auth-user-api";
+const SESSION_URL = "https://zegpganrjhmtqjgqyasu.supabase.co/functions/v1/get-active-session";
 
-    function render(type, message) {
-      status.className = "status " + type;
-      status.textContent = message;
+// ─── TELEGRAM ────────────────────────────────────────────────────────
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+// ─── SCREENS ─────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function showError(title, msg) {
+  document.getElementById("err-title").textContent = title;
+  document.getElementById("err-msg").textContent   = msg;
+  showScreen("screen-error");
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────
+const fmt  = (n, d = 2) => typeof n === "number" ? n.toFixed(d) : "—";
+const fmtD = (iso) => {
+  if (!iso) return "—";
+  const d = new Date(iso.replace(" ", "T") + (iso.includes("Z") ? "" : "Z"));
+  return d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+};
+const fmtDate = (iso) => {
+  if (!iso) return "—";
+  const d = new Date(iso.replace(" ", "T") + (iso.includes("Z") ? "" : "Z"));
+  return d.toLocaleDateString("es-ES", { month: "short", day: "numeric" }) + " " +
+    d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+};
+
+// ─── RENDER HELPERS ──────────────────────────────────────────────────
+function kpi(label, value, sub, accent) {
+  return `<div class="kpi" style="--accent:${accent}">
+    <div class="k-label">${label}</div>
+    <div class="k-val">${value}</div>
+    ${sub ? `<div class="k-sub">${sub}</div>` : ""}
+  </div>`;
+}
+
+function renderNoSession() {
+  document.getElementById("top-coin").textContent = "—";
+  document.getElementById("top-meta").textContent = "Sin sesión activa";
+  document.getElementById("top-pill").innerHTML =
+    `<span class="no-session-pill">⏸ Inactivo</span>`;
+
+  document.getElementById("main-content").innerHTML = `
+    <div class="empty-state">
+      <div class="icon">🤖</div>
+      <p>El bot no tiene ninguna sesión activa en este momento.<br>Cuando arranque, verás los datos aquí.</p>
+    </div>
+    <button class="refresh-btn" onclick="loadSession()">↻ Actualizar</button>
+  `;
+}
+
+function renderSession(s) {
+  const coin = s.coin ?? "—";
+  const pnl  = s.realized_pnl_trades ?? s.net_pnl_db ?? 0;
+  const vol  = s.total_volume ?? 0;
+  const fills = s.num_fills ?? 0;
+  const pos  = s.position ?? {};
+  const unr  = pos.unrealized_pnl_est ?? 0;
+
+  // topbar
+  document.getElementById("top-coin").textContent = coin + "/USD";
+  document.getElementById("top-meta").textContent =
+    "Inicio: " + fmtDate(s.start_time) + " · " + fills + " fills";
+  document.getElementById("top-pill").innerHTML =
+    `<span class="live-pill">En curso</span>`;
+
+  // ── posición abierta ──
+  const posSign  = unr > 0 ? "pos" : unr < 0 ? "neg" : "neutral";
+  const posHtml = `
+    <div>
+      <div class="sec-label">Posición abierta</div>
+      <div class="pos-banner">
+        <div class="pos-item">
+          <div class="label">Net Qty</div>
+          <div class="val">${pos.net_qty != null ? "+" + fmt(pos.net_qty, 4) : "—"} ${coin}</div>
+        </div>
+        <div class="pos-item">
+          <div class="label">Avg Entry</div>
+          <div class="val neutral">$${fmt(pos.avg_entry, 3)}</div>
+        </div>
+        <div class="pos-item">
+          <div class="label">Último Mid</div>
+          <div class="val neutral">$${fmt(pos.last_price, 3)}</div>
+        </div>
+        <div class="pos-item">
+          <div class="label">PnL Latente est.</div>
+          <div class="val ${posSign}">${unr >= 0 ? "+" : ""}$${fmt(unr, 4)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // ── KPIs ──
+  const pnlColor = pnl >= 0 ? "var(--green)" : "var(--red)";
+  const kpisHtml = `
+    <div>
+      <div class="sec-label">Sesión actual</div>
+      <div class="kpi-row">
+        ${kpi("PnL Realizado", (pnl >= 0 ? "+" : "") + "$" + fmt(pnl, 4), fills + " fills", pnlColor)}
+        ${kpi("Volumen", "$" + (vol >= 1000 ? (vol/1000).toFixed(2) + "k" : fmt(vol, 2)), "operado en sesión", "var(--blue)")}
+        ${kpi("Capital Ini.", "$" + fmt(s.initial_account_value, 2), "al arrancar", "var(--coin)")}
+        ${kpi("Drawdown Máx.", (s.max_drawdown ?? 0) === 0 ? "$0.00" : "$" + fmt(s.max_drawdown, 3), "intra-sesión", "var(--amber)")}
+      </div>
+    </div>
+  `;
+
+  // ── trades ──
+  const trades = (s.trades ?? []).slice().reverse(); // más reciente primero
+  const tradesRows = trades.map(t => {
+    const pnlT = t.realized_pnl ?? 0;
+    return `<div class="trade-row">
+      <div class="t-time">${fmtD(t.timestamp)}</div>
+      <div><span class="side-badge ${t.side?.toLowerCase()}">${t.side}</span></div>
+      <div class="t-price">$${fmt(t.price, 3)}</div>
+      <div class="t-usd">$${fmt(t.usd_value, 2)}</div>
+      <div class="t-pnl ${pnlT > 0 ? "pos" : pnlT < 0 ? "neg" : "dim"}">
+        ${pnlT !== 0 ? (pnlT > 0 ? "+" : "") + "$" + fmt(pnlT, 4) : "—"}
+      </div>
+    </div>`;
+  }).join("") || `<div class="dim" style="padding:12px 0;text-align:center;font-size:11px">Sin trades aún</div>`;
+
+  const tradesHtml = `
+    <div class="card">
+      <div class="sec-label">Trades</div>
+      <div class="trades-header">
+        <div>Hora</div><div>Lado</div><div style="text-align:right">Precio</div>
+        <div style="text-align:right">USD</div><div style="text-align:right">PnL</div>
+      </div>
+      ${tradesRows}
+    </div>
+  `;
+
+  // ── grid ladder ──
+  let gridHtml = "";
+  const g = s.grid;
+  if (g) {
+    const levels    = (g.levels ?? []).slice().sort((a, b) => b.price - a.price);
+    const maxUsd    = Math.max(...levels.map(l => l.target_size_usd ?? 0), 1);
+    // precio activo = last_price del último trade
+    const curPrice  = pos.last_price;
+
+    // encontrar el nivel más cercano al precio actual
+    let closestIdx = null;
+    if (curPrice) {
+      let minDiff = Infinity;
+      levels.forEach((l, i) => {
+        const d = Math.abs(l.price - curPrice);
+        if (d < minDiff) { minDiff = d; closestIdx = i; }
+      });
     }
 
-    async function init() {
-      const user = tg.initDataUnsafe?.user;
+    const rows = levels.map((l, i) => {
+      const isCurr = i === closestIdx;
+      const cls    = isCurr ? "curr" : l.side === "SELL" ? "sell" : "buy";
+      const barW   = Math.round((l.target_size_usd / maxUsd) * 100);
+      return `<div class="l-row ${cls}">
+        <div class="l-idx">${l.level_index}</div>
+        <div class="l-price">$${fmt(l.price, 2)}${isCurr ? " ←" : ""}</div>
+        <div class="bar-wrap"><div class="bar" style="width:${barW}%"></div></div>
+        <div class="l-usd">$${fmt(l.target_size_usd, 0)}</div>
+      </div>`;
+    }).join("");
 
-      if (!user) {
-        title.textContent = "Acceso denegado";
-        render("error", "Abre la app desde Telegram");
-        return;
-      }
+    gridHtml = `
+      <div class="card">
+        <div class="sec-label">Grid activo · #${g.id}</div>
+        <div class="grid-meta">
+          <span><b>${g.type}</b></span>
+          <span><b>${g.num_levels}</b> niveles</span>
+          <span>spacing <b>${fmt(g.spacing_pct * 100, 3)}%</b></span>
+          <span>$${fmt(g.bottom_price, 2)} – $${fmt(g.top_price, 2)}</span>
+        </div>
+        <div class="ladder">${rows}</div>
+        ${curPrice ? `<div style="margin-top:8px;font-size:10px;color:var(--hint)">
+          <span style="color:var(--amber)">←</span> precio actual ~$${fmt(curPrice, 3)}
+        </div>` : ""}
+      </div>
+    `;
+  }
 
-      title.textContent = `Hola ${user.first_name}`;
+  // ── refresh ──
+  document.getElementById("main-content").innerHTML =
+    posHtml + kpisHtml + tradesHtml + gridHtml +
+    `<button class="refresh-btn" id="refresh-btn" onclick="loadSession()">↻ Actualizar</button>`;
+}
 
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ initData: tg.initData })
-        });
+// ─── LOAD SESSION ────────────────────────────────────────────────────
+async function loadSession() {
+  const btn = document.getElementById("refresh-btn");
+  if (btn) { btn.classList.add("loading"); btn.textContent = "Cargando…"; }
 
-        const data = await res.json();
+  try {
+    const res  = await fetch(SESSION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData: tg.initData }),
+    });
+    const data = await res.json();
 
-        if (!res.ok) {
-          if (data.error === "User not registered") {
-            render("error", "🚫 Usuario no registrado");
-            return;
-          }
+    if (!res.ok) throw new Error(data.error ?? "Error al cargar sesión");
 
-          if (data.error === "User inactive") {
-            render("error", "⛔ Usuario desactivado");
-            return;
-          }
+    if (!data.active_session) {
+      renderNoSession();
+    } else {
+      renderSession(data.active_session);
+    }
+  } catch (err) {
+    if (btn) { btn.classList.remove("loading"); btn.textContent = "↻ Actualizar"; }
+    tg.showAlert("Error al cargar la sesión: " + err.message);
+  }
+}
 
-          render("error", "❌ Error de acceso");
-          return;
-        }
+// ─── INIT ────────────────────────────────────────────────────────────
+async function init() {
+  const user = tg.initDataUnsafe?.user;
 
-        render("ok", "✅ Acceso concedido");
+  if (!user) {
+    showError("Acceso denegado", "Abre la app desde Telegram.");
+    return;
+  }
 
-        console.log("USER:", data.user);
+  // 1. auth
+  try {
+    const res  = await fetch(AUTH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData: tg.initData }),
+    });
+    const data = await res.json();
 
-      } catch (err) {
-        render("error", "❌ Error backend");
-      }
+    if (!res.ok) {
+      const msgs = {
+        "User not registered": "🚫 Usuario no registrado.\nContacta con el administrador.",
+        "User inactive":       "⛔ Tu cuenta está desactivada.",
+        "Unauthorized telegram": "❌ Validación de Telegram fallida.",
+      };
+      showError("Sin acceso", msgs[data.error] ?? "Error de acceso (" + data.error + ")");
+      return;
     }
 
-    init();
-  </script>
+    // 2. mostrar pantalla principal y cargar datos
+    showScreen("screen-main");
+    await loadSession();
+
+  } catch (err) {
+    showError("Error de conexión", "No se pudo contactar con el servidor.");
+  }
+}
+
+init();
+</script>
 </body>
 </html>
