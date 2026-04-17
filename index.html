@@ -60,19 +60,48 @@
 </head>
 <body>
   <div class="card">
-    <h1>¡Hola mundo! 👋</h1>
-    <p>Esta es tu primera Telegram Mini App publicada en GitHub Pages.</p>
-    <button class="btn" onclick="onBotonClick()">Saludar</button>
+    <h1 id="titulo">¡Hola mundo! 👋</h1>
+    <p id="descripcion">Esta es tu primera Telegram Mini App publicada en GitHub Pages.</p>
+    <button class="btn" onclick="onBotonClick()">Mostrar usuario</button>
   </div>
 
   <script>
-    // Inicializa el SDK y expande la app al tamaño completo
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    function onBotonClick() {
-      tg.showAlert('¡Hola desde tu Mini App!');
+    async function onBotonClick() {
+      // ⚠️ Solo para UI (no seguro)
+      const user = tg.initDataUnsafe?.user;
+
+      if (!user) {
+        tg.showAlert("No se pudo obtener el usuario");
+        return;
+      }
+
+      // Mostrar en pantalla
+      document.getElementById("titulo").innerText = `Hola ${user.first_name} 👋`;
+      document.getElementById("descripcion").innerText =
+        `ID: ${user.id} | Username: ${user.username || "sin username"}`;
+
+      // 🔐 Preparado para backend (Edge Function)
+      try {
+        const res = await fetch("https://TU-PROYECTO.supabase.co/functions/v1/auth-user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            initData: tg.initData
+          })
+        });
+
+        const data = await res.json();
+        console.log("Respuesta backend:", data);
+
+      } catch (err) {
+        console.error("Error llamando backend:", err);
+      }
     }
   </script>
 </body>
