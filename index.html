@@ -2,113 +2,73 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mini App Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mini App</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background-color: var(--tg-theme-bg-color, #ffffff);
-      color: var(--tg-theme-text-color, #000000);
+      font-family: system-ui;
+      background: var(--tg-theme-bg-color, #fff);
+      color: var(--tg-theme-text-color, #000);
       display: flex;
-      align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
+      align-items: center;
+      height: 100vh;
     }
 
     .card {
-      background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+      padding: 20px;
       border-radius: 16px;
-      padding: 28px 20px;
+      background: var(--tg-theme-secondary-bg-color, #f3f3f3);
       text-align: center;
-      max-width: 360px;
-      width: 100%;
-    }
-
-    h1 {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    p {
-      font-size: 14px;
-      opacity: 0.7;
-      margin-bottom: 20px;
+      width: 300px;
     }
 
     .status {
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 13px;
       margin-top: 10px;
+      font-size: 14px;
     }
 
-    .ok { background: #d1f5d3; }
-    .error { background: #ffd6d6; }
-    .loading { background: #e6e6e6; }
-
-    .hidden {
-      display: none;
-    }
+    .ok { color: green; }
+    .error { color: red; }
+    .loading { color: gray; }
   </style>
 </head>
 
 <body>
   <div class="card">
-    <h1 id="titulo">Cargando...</h1>
-    <p id="descripcion">Inicializando aplicación</p>
-
-    <div id="status" class="status loading">
-      Conectando con backend...
-    </div>
-
-    <div id="dashboard" class="hidden">
-      <p>📊 Dashboard activo</p>
-      <p id="userInfo"></p>
-    </div>
+    <h2 id="title">Cargando...</h2>
+    <div id="status" class="status loading">Conectando...</div>
   </div>
 
   <script>
     const tg = window.Telegram.WebApp;
-
     tg.ready();
     tg.expand();
 
     const API_URL = "https://zegpganrjhmtqjgqyasu.supabase.co/functions/v1/auth-user-api";
 
-    // 🔐 TU ANON KEY
-    const SUPABASE_ANON_KEY = "sb_publishable_OEvO2fKh70iCxuLXRzjVqA_a4Nxs3qn";
-
     async function login() {
       const status = document.getElementById("status");
-      const titulo = document.getElementById("titulo");
-      const descripcion = document.getElementById("descripcion");
-      const dashboard = document.getElementById("dashboard");
-      const userInfo = document.getElementById("userInfo");
+      const title = document.getElementById("title");
 
-      const userUI = tg.initDataUnsafe?.user;
+      const user = tg.initDataUnsafe?.user;
 
-      if (!userUI) {
+      if (!user) {
+        status.textContent = "Abre la app desde Telegram";
         status.className = "status error";
-        status.innerText = "❌ Abre la app desde Telegram";
         return;
       }
 
-      titulo.innerText = `Hola ${userUI.first_name} 👋`;
-      descripcion.innerText = "Validando acceso...";
+      title.textContent = `Hola ${user.first_name}`;
 
       try {
         const res = await fetch(API_URL, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-            "apikey": SUPABASE_ANON_KEY
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
             initData: tg.initData
@@ -118,38 +78,23 @@
         const data = await res.json();
 
         if (!res.ok) {
+          status.textContent = "❌ " + (data.error || "Error");
           status.className = "status error";
-          status.innerText = `❌ ${data.error || "Acceso denegado"}`;
-          descripcion.innerText = "No autorizado";
           return;
         }
 
-        // ✅ Usuario autenticado
+        status.textContent = "✅ Autenticado";
         status.className = "status ok";
-        status.innerText = "✅ Autenticado correctamente";
 
-        descripcion.innerText = "Acceso concedido";
-
-        dashboard.classList.remove("hidden");
-
-        userInfo.innerText = `
-ID: ${data.user.telegram_id}
-Admin: ${data.user.is_admin ? "Sí" : "No"}
-        `;
-
-        console.log("Usuario backend:", data);
+        console.log("USER:", data.user);
 
       } catch (err) {
-        console.error("ERROR:", err);
-
+        status.textContent = "❌ Error backend";
         status.className = "status error";
-        status.innerText = "❌ Error conectando con backend";
-
-        descripcion.innerText = err.message;
+        console.error(err);
       }
     }
 
-    // 🚀 Auto login
     window.onload = login;
   </script>
 </body>
