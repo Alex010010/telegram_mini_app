@@ -66,43 +66,52 @@
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
 
-    async function onBotonClick() {
-      // ⚠️ Solo para UI (no seguro)
-      const user = tg.initDataUnsafe?.user;
+  async function onBotonClick() {
+    const userUI = tg.initDataUnsafe?.user;
 
-      if (!user) {
-        tg.showAlert("No se pudo obtener el usuario");
+    if (!userUI) {
+      tg.showAlert("Abre la app desde Telegram");
+      return;
+    }
+
+    // Mostrar usuario (solo UI)
+    document.getElementById("titulo").innerText = `Hola ${userUI.first_name} 👋`;
+
+    try {
+      const res = await fetch("https://zegpganrjhmtqjgqyasu.supabase.co/functions/v1/auth-user-api", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          initData: tg.initData
+        })
+      });
+
+      const data = await res.json();
+
+      // 🔐 CONTROL REAL
+      if (!res.ok) {
+        document.getElementById("descripcion").innerText =
+          `❌ Acceso denegado: ${data.error}`;
         return;
       }
 
-      // Mostrar en pantalla
-      document.getElementById("titulo").innerText = `Hola ${user.first_name} 👋`;
+      // ✅ Usuario validado
       document.getElementById("descripcion").innerText =
-        `ID: ${user.id} | Username: ${user.username || "sin username"}`;
+        `✅ Autenticado | ID: ${data.user.telegram_id}`;
 
-      // 🔐 Preparado para backend (Edge Function)
-      try {
-        const res = await fetch("https://TU-PROYECTO.supabase.co/functions/v1/auth-user", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            initData: tg.initData
-          })
-        });
+      console.log("Usuario backend:", data);
 
-        const data = await res.json();
-        console.log("Respuesta backend:", data);
-
-      } catch (err) {
-        console.error("Error llamando backend:", err);
-      }
+    } catch (err) {
+      console.error(err);
+      tg.showAlert("Error conectando con backend");
     }
-  </script>
+  }
+</script>
 </body>
 </html>
