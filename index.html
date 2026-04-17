@@ -81,6 +81,9 @@
 
     const API_URL = "https://zegpganrjhmtqjgqyasu.supabase.co/functions/v1/auth-user-api";
 
+    // 🔐 TU ANON KEY
+    const SUPABASE_ANON_KEY = "sb_publishable_OEvO2fKh70iCxuLXRzjVqA_a4Nxs3qn";
+
     async function login() {
       const status = document.getElementById("status");
       const titulo = document.getElementById("titulo");
@@ -88,12 +91,11 @@
       const dashboard = document.getElementById("dashboard");
       const userInfo = document.getElementById("userInfo");
 
-      // Usuario UI (no seguro)
       const userUI = tg.initDataUnsafe?.user;
 
       if (!userUI) {
         status.className = "status error";
-        status.innerText = "Abre la app desde Telegram";
+        status.innerText = "❌ Abre la app desde Telegram";
         return;
       }
 
@@ -104,7 +106,9 @@
         const res = await fetch(API_URL, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "apikey": SUPABASE_ANON_KEY
           },
           body: JSON.stringify({
             initData: tg.initData
@@ -136,13 +140,16 @@ Admin: ${data.user.is_admin ? "Sí" : "No"}
         console.log("Usuario backend:", data);
 
       } catch (err) {
-        console.error(err);
+        console.error("ERROR:", err);
+
         status.className = "status error";
-        status.innerText = "Error de conexión con backend";
+        status.innerText = "❌ Error conectando con backend";
+
+        descripcion.innerText = err.message;
       }
     }
 
-    // 🚀 Auto login al cargar
+    // 🚀 Auto login
     window.onload = login;
   </script>
 </body>
