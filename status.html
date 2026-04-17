@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Status</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    body {
+      font-family: system-ui;
+      background: var(--tg-theme-bg-color, #fff);
+      color: var(--tg-theme-text-color, #000);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .box {
+      text-align: center;
+      padding: 24px;
+      border-radius: 16px;
+      background: var(--tg-theme-secondary-bg-color, #f3f3f3);
+      width: 320px;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    .msg {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .btn {
+      margin-top: 16px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      background: #2481cc;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <h2 id="title">Error</h2>
+    <div class="msg" id="msg"></div>
+    <button class="btn" onclick="goBack()">Reintentar</button>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("error");
+
+    const title = document.getElementById("title");
+    const msg = document.getElementById("msg");
+
+    const messages = {
+      "no-telegram": {
+        title: "Acceso denegado",
+        msg: "Abre esta aplicación desde Telegram."
+      },
+      "not-registered": {
+        title: "No registrado",
+        msg: "No tienes acceso a esta aplicación."
+      },
+      "blocked": {
+        title: "Usuario bloqueado",
+        msg: "Tu acceso ha sido desactivado."
+      },
+      "network": {
+        title: "Error de red",
+        msg: "No se pudo conectar con el servidor."
+      },
+      "unknown": {
+        title: "Error",
+        msg: "Error desconocido."
+      }
+    };
+
+    const data = messages[error] || messages["unknown"];
+
+    title.textContent = data.title;
+    msg.textContent = data.msg;
+
+    function goBack() {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
