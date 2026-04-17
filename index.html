@@ -16,18 +16,24 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
 
     .card {
-      padding: 20px;
+      padding: 24px;
       border-radius: 16px;
       background: var(--tg-theme-secondary-bg-color, #f3f3f3);
       text-align: center;
-      width: 300px;
+      width: 320px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-bottom: 10px;
     }
 
     .status {
-      margin-top: 10px;
+      margin-top: 12px;
       font-size: 14px;
     }
 
@@ -40,7 +46,7 @@
 <body>
   <div class="card">
     <h2 id="title">Cargando...</h2>
-    <div id="status" class="status loading">Conectando...</div>
+    <div id="status" class="status loading">Verificando acceso...</div>
   </div>
 
   <script>
@@ -50,14 +56,16 @@
 
     const API_URL = "https://zegpganrjhmtqjgqyasu.supabase.co/functions/v1/auth-user-api";
 
-    async function login() {
-      const status = document.getElementById("status");
-      const title = document.getElementById("title");
+    const title = document.getElementById("title");
+    const status = document.getElementById("status");
 
+    async function init() {
       const user = tg.initDataUnsafe?.user;
 
+      // 1. Check básico de Telegram
       if (!user) {
-        status.textContent = "Abre la app desde Telegram";
+        title.textContent = "Acceso denegado";
+        status.textContent = "Abre esta app desde Telegram";
         status.className = "status error";
         return;
       }
@@ -65,6 +73,7 @@
       title.textContent = `Hola ${user.first_name}`;
 
       try {
+        // 2. Llamada a backend con initData real
         const res = await fetch(API_URL, {
           method: "POST",
           headers: {
@@ -77,25 +86,40 @@
 
         const data = await res.json();
 
+        // 3. Manejo de errores backend
         if (!res.ok) {
-          status.textContent = "❌ " + (data.error || "Error");
           status.className = "status error";
+
+          if (data.error === "User not registered") {
+            status.textContent = "🚫 Usuario no registrado";
+          } 
+          else if (data.error === "User inactive") {
+            status.textContent = "⛔ Usuario desactivado";
+          } 
+          else if (data.error === "Unauthorized telegram") {
+            status.textContent = "🔐 Firma inválida";
+          } 
+          else {
+            status.textContent = "❌ Error: " + (data.error || "desconocido");
+          }
+
           return;
         }
 
-        status.textContent = "✅ Autenticado";
+        // 4. OK
         status.className = "status ok";
+        status.textContent = "✅ Acceso concedido";
 
-        console.log("USER:", data.user);
+        console.log("USER LOGGED:", data.user);
 
       } catch (err) {
-        status.textContent = "❌ Error backend";
         status.className = "status error";
+        status.textContent = "❌ Error de conexión con backend";
         console.error(err);
       }
     }
 
-    window.onload = login;
+    init();
   </script>
 </body>
 </html>
