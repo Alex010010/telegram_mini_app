@@ -27,7 +27,9 @@
             --radius: 14px;
         }
 
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -44,8 +46,14 @@
         }
 
         /* ── SCREEN SYSTEM ──────────────────────────────────────────────── */
-        .screen { display: none; }
-        .screen.active { display: flex; flex-direction: column; }
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
 
         /* ── LOADING / ERROR ────────────────────────────────────────────── */
         #screen-loading,
@@ -89,7 +97,11 @@
             margin: 0 auto 20px;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         /* ── MAIN ───────────────────────────────────────────────────────── */
         #screen-main {
@@ -118,7 +130,9 @@
             line-height: 1;
         }
 
-        .topbar-left h1 span { color: var(--coin); }
+        .topbar-left h1 span {
+            color: var(--coin);
+        }
 
         .topbar-left .sub {
             font-size: 10px;
@@ -151,8 +165,17 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 232, 154, .4); }
-            50%       { opacity: .6; box-shadow: 0 0 0 4px rgba(0, 232, 154, 0); }
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(0, 232, 154, .4);
+            }
+
+            50% {
+                opacity: .6;
+                box-shadow: 0 0 0 4px rgba(0, 232, 154, 0);
+            }
         }
 
         .no-session-pill {
@@ -223,9 +246,17 @@
             color: var(--coin);
         }
 
-        .pos-item .val.pos     { color: var(--green); }
-        .pos-item .val.neg     { color: var(--red); }
-        .pos-item .val.neutral { color: var(--text); }
+        .pos-item .val.pos {
+            color: var(--green);
+        }
+
+        .pos-item .val.neg {
+            color: var(--red);
+        }
+
+        .pos-item .val.neutral {
+            color: var(--text);
+        }
 
         /* ── KPI ROW ────────────────────────────────────────────────────── */
         .kpi-row {
@@ -304,7 +335,9 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .trade-row:last-child { border-bottom: none; }
+        .trade-row:last-child {
+            border-bottom: none;
+        }
 
         .trade-row .t-time {
             color: var(--hint);
@@ -320,8 +353,15 @@
             text-transform: uppercase;
         }
 
-        .side-badge.buy  { background: rgba(0, 232, 154, .1); color: var(--green); }
-        .side-badge.sell { background: rgba(255, 77, 106, .1); color: var(--red); }
+        .side-badge.buy {
+            background: rgba(0, 232, 154, .1);
+            color: var(--green);
+        }
+
+        .side-badge.sell {
+            background: rgba(255, 77, 106, .1);
+            color: var(--red);
+        }
 
         /* Precios y PnL en trades también con tabular-nums */
         .trade-row .t-price {
@@ -343,9 +383,17 @@
             text-align: right;
         }
 
-        .pos { color: var(--green); }
-        .neg { color: var(--red); }
-        .dim { color: var(--hint); }
+        .pos {
+            color: var(--green);
+        }
+
+        .neg {
+            color: var(--red);
+        }
+
+        .dim {
+            color: var(--hint);
+        }
 
         /* ── GRID LADDER ────────────────────────────────────────────────── */
         .ladder {
@@ -365,9 +413,20 @@
             font-size: 11px;
         }
 
-        .l-row.sell { border-color: rgba(255, 77, 106, .15); background: rgba(255, 77, 106, .04); }
-        .l-row.buy  { border-color: rgba(0, 232, 154, .15);  background: rgba(0, 232, 154, .04); }
-        .l-row.curr { border-color: var(--amber) !important; background: rgba(245, 166, 35, .08) !important; }
+        .l-row.sell {
+            border-color: rgba(255, 77, 106, .15);
+            background: rgba(255, 77, 106, .04);
+        }
+
+        .l-row.buy {
+            border-color: rgba(0, 232, 154, .15);
+            background: rgba(0, 232, 154, .04);
+        }
+
+        .l-row.curr {
+            border-color: var(--amber) !important;
+            background: rgba(245, 166, 35, .08) !important;
+        }
 
         .l-idx {
             color: var(--hint);
@@ -383,9 +442,17 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .l-row.sell .l-price { color: var(--red); }
-        .l-row.buy  .l-price { color: var(--green); }
-        .l-row.curr .l-price { color: var(--amber); }
+        .l-row.sell .l-price {
+            color: var(--red);
+        }
+
+        .l-row.buy .l-price {
+            color: var(--green);
+        }
+
+        .l-row.curr .l-price {
+            color: var(--amber);
+        }
 
         .bar-wrap {
             background: var(--border);
@@ -394,10 +461,22 @@
             overflow: hidden;
         }
 
-        .bar { height: 100%; border-radius: 3px; }
-        .l-row.sell .bar { background: var(--red); }
-        .l-row.buy  .bar { background: var(--green); }
-        .l-row.curr .bar { background: var(--amber); }
+        .bar {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .l-row.sell .bar {
+            background: var(--red);
+        }
+
+        .l-row.buy .bar {
+            background: var(--green);
+        }
+
+        .l-row.curr .bar {
+            background: var(--amber);
+        }
 
         .l-usd {
             color: var(--hint);
@@ -422,7 +501,9 @@
             color: var(--hint);
         }
 
-        .grid-meta span b { color: var(--text); }
+        .grid-meta span b {
+            color: var(--text);
+        }
 
         /* ── REFRESH BTN ────────────────────────────────────────────────── */
         .refresh-btn {
@@ -444,8 +525,14 @@
             transition: opacity .2s;
         }
 
-        .refresh-btn:active { opacity: .75; }
-        .refresh-btn.loading { opacity: .6; pointer-events: none; }
+        .refresh-btn:active {
+            opacity: .75;
+        }
+
+        .refresh-btn.loading {
+            opacity: .6;
+            pointer-events: none;
+        }
 
         /* ── EMPTY STATE ────────────────────────────────────────────────── */
         .empty-state {
@@ -504,7 +591,7 @@
 
     <script>
         // ─── CONFIG ──────────────────────────────────────────────────────────
-        const AUTH_URL    = "https://zegpganrjhmtqjgqyasu.supabase.co/functions/v1/auth-user-api";
+        const AUTH_URL = "https://zegpganrjhmtqjgqyasu.supabase.co/functions/v1/auth-user-api";
         const SESSION_URL = "https://zegpganrjhmtqjgqyasu.supabase.co/functions/v1/get-active-session";
 
         // ─── TELEGRAM ────────────────────────────────────────────────────────
@@ -520,24 +607,31 @@
 
         function showError(title, msg) {
             document.getElementById("err-title").textContent = title;
-            document.getElementById("err-msg").textContent   = msg;
+            document.getElementById("err-msg").textContent = msg;
             showScreen("screen-error");
         }
 
         // ─── HELPERS ─────────────────────────────────────────────────────────
         const fmt = (n, d = 2) => typeof n === "number" ? n.toFixed(d) : "—";
 
+        const toDate = (iso) => {
+            if (!iso) return null;
+            const normalized = iso.replace(" ", "T");
+            const hasOffset = /[Zz]$|[+\-]\d{2}:\d{2}$/.test(normalized);
+            return new Date(hasOffset ? normalized : normalized + "Z");
+        };
+
         const fmtD = (iso) => {
-            if (!iso) return "—";
-            const d = new Date(iso.replace(" ", "T") + (iso.includes("Z") ? "" : "Z"));
+            const d = toDate(iso);
+            if (!d || isNaN(d)) return "—";
             return d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
         };
 
         const fmtDate = (iso) => {
-            if (!iso) return "—";
-            const d = new Date(iso.replace(" ", "T") + (iso.includes("Z") ? "" : "Z"));
+            const d = toDate(iso);
+            if (!d || isNaN(d)) return "—";
             return d.toLocaleDateString("es-ES", { month: "short", day: "numeric" }) + " " +
-                   d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+                d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
         };
 
         // ─── RENDER HELPERS ──────────────────────────────────────────────────
@@ -567,12 +661,12 @@
 
         // ─── RENDER: SESIÓN ACTIVA ───────────────────────────────────────────
         function renderSession(s) {
-            const coin  = s.coin ?? "—";
-            const pnl   = s.realized_pnl_trades ?? s.net_pnl_db ?? 0;
-            const vol   = s.total_volume ?? 0;
+            const coin = s.coin ?? "—";
+            const pnl = s.realized_pnl_trades ?? s.net_pnl_db ?? 0;
+            const vol = s.total_volume ?? 0;
             const fills = s.num_fills ?? 0;
-            const pos   = s.position ?? {};
-            const unr   = pos.unrealized_pnl_est ?? 0;
+            const pos = s.position ?? {};
+            const unr = pos.unrealized_pnl_est ?? 0;
 
             // topbar
             document.getElementById("top-coin").textContent = coin + "/USD";
@@ -623,8 +717,8 @@
             let gridHtml = "";
             const g = s.grid;
             if (g) {
-                const levels   = (g.levels ?? []).slice().sort((a, b) => b.price - a.price);
-                const maxUsd   = Math.max(...levels.map(l => l.target_size_usd ?? 0), 1);
+                const levels = (g.levels ?? []).slice().sort((a, b) => b.price - a.price);
+                const maxUsd = Math.max(...levels.map(l => l.target_size_usd ?? 0), 1);
                 const curPrice = pos.last_price;
 
                 let closestIdx = null;
@@ -638,8 +732,8 @@
 
                 const rows = levels.map((l, i) => {
                     const isCurr = i === closestIdx;
-                    const cls    = isCurr ? "curr" : l.side === "SELL" ? "sell" : "buy";
-                    const barW   = Math.round((l.target_size_usd / maxUsd) * 100);
+                    const cls = isCurr ? "curr" : l.side === "SELL" ? "sell" : "buy";
+                    const barW = Math.round((l.target_size_usd / maxUsd) * 100);
                     return `<div class="l-row ${cls}">
                         <div class="l-idx">${l.level_index}</div>
                         <div class="l-price">$${fmt(l.price, 2)}${isCurr ? " ←" : ""}</div>
@@ -704,7 +798,7 @@
             if (btn) { btn.classList.add("loading"); btn.textContent = "Cargando…"; }
 
             try {
-                const res  = await fetch(SESSION_URL, {
+                const res = await fetch(SESSION_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ initData: tg.initData }),
@@ -734,7 +828,7 @@
             }
 
             try {
-                const res  = await fetch(AUTH_URL, {
+                const res = await fetch(AUTH_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ initData: tg.initData }),
@@ -743,8 +837,8 @@
 
                 if (!res.ok) {
                     const msgs = {
-                        "User not registered":   "🚫 Usuario no registrado.\nContacta con el administrador.",
-                        "User inactive":         "⛔ Tu cuenta está desactivada.",
+                        "User not registered": "🚫 Usuario no registrado.\nContacta con el administrador.",
+                        "User inactive": "⛔ Tu cuenta está desactivada.",
                         "Unauthorized telegram": "❌ Validación de Telegram fallida.",
                     };
                     showError("Sin acceso", msgs[data.error] ?? "Error de acceso (" + data.error + ")");
